@@ -45,7 +45,7 @@ class EtlUseCase:
             buffer.append(log)
 
             # 最新のログ時刻を記録
-            if log.created_at > latest_log_time:
+            if log.created_at > latest_log_time.replace(tzinfo=timezone.utc):
                 latest_log_time = log.created_at
 
             # チャンクサイズに達したらDBへ一括登録 (COPY実行)
