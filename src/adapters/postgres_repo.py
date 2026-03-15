@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 # psycopg バージョン3を使用
 import psycopg
 from psycopg.types.json import Jsonb
+from psycopg import sql
 
 from src.domain.models import SignInLog, BatchStatus
 from src.domain.exceptions import DatabaseError
@@ -61,15 +62,23 @@ class PostgresRepository(DatabasePort):
 
         partition_name = f"entra_signin_logs_y{start_of_month.strftime('%Y')}m{start_of_month.strftime('%m')}"
 
-        query = f"""
-            CREATE TABLE IF NOT EXISTS {partition_name} 
+        query = sql.SQL(
+            """
+            CREATE TABLE IF NOT EXISTS {partition_table} 
             PARTITION OF entra_signin_logs 
-            FOR VALUES FROM (%s) TO (%s);
+            FOR VALUES FROM ({start}) TO ({end});
         """
+        ).format(
+            partition_table=sql.Identifier(partition_name),
+            start=sql.Literal(start_of_month),
+            end=sql.Literal(end_of_month),
+        )
+
         try:
             with psycopg.connect(self.conn_str, autocommit=True) as conn:
                 with conn.cursor() as cur:
-                    cur.execute(query, (start_of_month, end_of_month))
+                    print(query.as_string(conn))  # デバッグ用: 実行されるSQLを表示
+                    cur.execute(query)
         except Exception as e:
             raise DatabaseError(
                 f"パーティション {partition_name} の作成に失敗しました: {e}"
