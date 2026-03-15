@@ -81,8 +81,7 @@ CREATE INDEX idx_signin_upn ON entra_signin_logs (user_principal_name);
 CREATE INDEX idx_signin_raw_data ON entra_signin_logs USING GIN (raw_data);
 
 -- デフォルトパーティション（範囲外データの一時受け用）
-CREATE TABLE entra_signin_logs_default 
-PARTITION OF entra_signin_logs DEFAULT;
+CREATE TABLE entra_signin_logs_default PARTITION OF entra_signin_logs DEFAULT;
 ```
 
 ### 4.2 管理用テーブル: batch_status
