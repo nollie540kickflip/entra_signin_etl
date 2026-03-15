@@ -77,7 +77,6 @@ class PostgresRepository(DatabasePort):
         try:
             with psycopg.connect(self.conn_str, autocommit=True) as conn:
                 with conn.cursor() as cur:
-                    print(query.as_string(conn))  # デバッグ用: 実行されるSQLを表示
                     cur.execute(query)
         except Exception as e:
             raise DatabaseError(
